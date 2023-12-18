@@ -473,6 +473,18 @@ app.post('/getFile2', async (req, res) => {
           if (archivoEncontrado)
           {
             console.log('Archivo encontrado:', archivoEncontrado);
+
+            // Extraer contenido del archivo
+            const readStream = sftp.createReadStream(remotePath);
+            readStream.pipe(concatStream((contenido) => {
+              console.log('Contenido del archivo extraído:', contenido.toString());
+              res.status(200).json({ mensaje: 'Contenido extraído correctamente', contenido: contenido.toString() });
+
+              // Cerrar la conexión SFTP y SSH cuando hayas terminado
+              sftp.end();
+              conn.end();
+            }));
+
             res.status(200).json({ mensaje: 'Archivo encontrado', archivo: archivoEncontrado });
           }
           else
@@ -482,8 +494,8 @@ app.post('/getFile2', async (req, res) => {
           }
   
           // Cerrar la conexión SFTP y SSH cuando hayas terminado
-          sftp.end();
-          conn.end();
+          //sftp.end();
+          //conn.end();
         });
       });
   });
