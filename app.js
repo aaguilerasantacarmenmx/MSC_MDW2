@@ -326,20 +326,21 @@ app.post('/uploadFile3', async (req, res) => {
       
     //RUTA DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
     const rutaLocal = `ArchivosTXT/${fileName}`;
-      
+    console.log(`329. Conexión establecida con el servidor SFTP - rutaLocal: ${rutaLocal}\n`);
     //RUTA DEL SERVIDOR DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
     const remotePath2 = `${remotePath}${fileName}`;//`/home/ec2-user/test/${fileName}`;
-      
-    //SE CREA ARCHIVO TXT EN CARPETA DE LA APLICACION PARA LUEGO PODER ENVIARLO A SERVIDOR SFPT
+    console.log(`332. Conexión establecida con el servidor SFTP - remotePath2: ${remotePath2}\n`);
+    //SE CREA ARconsole.log(`325. Conexión establecida con el servidor SFTP - host: ${host}\n`);CHIVO TXT EN CARPETA DE LA APLICACION PARA LUEGO PODER ENVIARLO A SERVIDOR SFPT
     require('fs').writeFileSync(rutaLocal, respuesta.data, 'utf-8');
-
+    console.log(`335.`);
     conn.sftp((err, sftp) => {
-      
+      console.log(`337.`);
       if (err) throw err;
-
+      console.log(`339.`);
       const readStream = require('fs').createReadStream(rutaLocal);
+      console.log(`341. readStream: ${readStream}`);
       const writeStream = sftp.createWriteStream(remotePath2);
-
+      console.log(`343. writeStream: ${writeStream}`);
       writeStream.on('close', () => {
         console.log('344. Archivo subido exitosamente');
         res.status(200).send('Archivo subido exitosamente');
