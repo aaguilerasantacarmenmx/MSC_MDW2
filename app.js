@@ -319,16 +319,17 @@ app.post('/uploadFile3', async (req, res) => {
     await conn.connect(sftpConfig);
 
     conn.on('ready', () => {
-      console.log(`Conexión SFTP establecida - conn: ${conn}`);
+      console.log(`322. Conexión SFTP establecida - conn: ${JSON.stringify(conn)}`);
 
       // Realizar operaciones SFTP aquí, por ejemplo, subir un archivo
       const localPath = `ArchivosTXT/${fileName}`;
       const remotePath = `${remotePath}${fileName}`;
-      console.log(`325. localPath: ${localPath} - remotePath: ${remotePath}\n`);
+      require('fs').writeFileSync(localPath, respuesta.data, 'utf-8');
+      console.log(`328. localPath: ${localPath} - remotePath: ${remotePath}\n`);
       conn.sftp((err, sftp) => {
         if (err) {
-          console.error('Error al establecer la conexión SFTP:', err);
-          res.status(500).send('Error al establecer la conexión SFTP');
+          console.error('331. Error al establecer la conexión SFTP:', err);
+          res.status(500).send('332. Error al establecer la conexión SFTP');
           return;
         }
 
