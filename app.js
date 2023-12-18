@@ -463,6 +463,10 @@ app.post('/getFile2', async (req, res) => {
             return;
           }
   
+          const nombresArchivos = listaArchivos.map((archivo) => archivo.filename);
+
+        console.log('Nombres de archivos en el directorio remoto:', nombresArchivos);
+        //res.status(200).json({ mensaje: 'Archivos listados correctamente', archivos: nombresArchivos });
           // Buscar el archivo en la lista
           const archivoEncontrado = listaArchivos.find((archivo) => archivo.filename === fileName);
   
