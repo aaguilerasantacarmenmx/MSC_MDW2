@@ -335,7 +335,11 @@ app.post('/uploadFile3', async (req, res) => {
     console.log(`335.`);
     conn.sftp((err, sftp) => {
       console.log(`337.`);
-      if (err) throw err;
+      if (err)
+      {
+        console.log(`340. err: ${JSON.stringify(err)}`);
+        throw err;
+      }
       console.log(`339.`);
       const readStream = require('fs').createReadStream(rutaLocal);
       console.log(`341. readStream: ${readStream}`);
