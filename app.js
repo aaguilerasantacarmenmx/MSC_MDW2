@@ -319,7 +319,7 @@ app.post('/uploadFile3', async (req, res) => {
     await conn.connect(sftpConfig);
 
     conn.on('ready', () => {
-      console.log(`322. Conexión SFTP establecida - conn: ${JSON.stringify(conn)}`);
+      console.log(`322. Conexión SFTP establecida`);
 
       // Realizar operaciones SFTP aquí, por ejemplo, subir un archivo
       const localPath = `ArchivosTXT/${fileName}`;
