@@ -150,8 +150,7 @@ app.post('/uploadFile2', async (req, res) => {
     };
   
   const sftp = new SftpClient();
-  const conn = new Client({
-  });
+  const conn = new Client();
 
   conn.on('ready', () => {
     console.log('Conexión SFTP establecida');
@@ -258,6 +257,112 @@ app.post('/uploadFile2', async (req, res) => {
         fileContent: null
       });
   });*/
+});
+
+app.post('/uploadFile3', async (req, res) => {
+
+  const fileName = req[`body`][`fileName`];
+  const fileUrl = req[`body`][`fileUrl`];
+  const host = req[`body`][`host`];
+  const port = req[`body`][`port`];
+  const username = req[`body`][`username`];
+  const password = req[`body`][`password`];
+  const remotePath = req[`body`][`remotePath`];
+  const respuesta = await axios.get(fileUrl);
+
+  console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
+  //console.log(`26. Contenido archivo: ${respuesta.data}\n`);
+  
+  const SftpClient = require('ssh2-sftp-client');
+  const { Client } = require('ssh2');
+
+  const saltRounds = 10;
+  //const hashedPassword = await bcrypt.hash(password, saltRounds);
+  //console.log(`111. hashedPassword: ${hashedPassword}\n`);
+  const config = {
+    host: host,
+    port: port,
+    username: username,
+    password: password,
+    algorithms: {
+      kex: [
+        "diffie-hellman-group1-sha1",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group14-sha1"
+      ],
+      cipher: [
+        "3des-cbc",
+        "aes128-ctr",
+        "aes192-ctr",
+        "aes256-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com"
+      ],
+      serverHostKey: [
+        "ssh-rsa",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521"
+      ],
+      hmac: [
+        "hmac-sha2-256",
+        "hmac-sha2-512",
+        "hmac-sha1"
+      ]
+    }
+  };
+  
+  //const sftp = new SftpClient();
+  const conn = new Client();
+  conn.connect(config)
+  
+  conn.on('ready', () => {
+    console.log(`325. Conexión establecida con el servidor SFTP - host: ${host}\n`);
+      
+    //RUTA DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
+    const rutaLocal = `ArchivosTXT/${fileName}`;
+      
+    //RUTA DEL SERVIDOR DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
+    const remotePath2 = `${remotePath}${fileName}`;//`/home/ec2-user/test/${fileName}`;
+      
+    //SE CREA ARCHIVO TXT EN CARPETA DE LA APLICACION PARA LUEGO PODER ENVIARLO A SERVIDOR SFPT
+    require('fs').writeFileSync(rutaLocal, respuesta.data, 'utf-8');
+
+    conn.sftp((err, sftp) => {
+      
+      if (err) throw err;
+
+      const readStream = fs.createReadStream(rutaLocal);
+      const writeStream = sftp.createWriteStream(remotePath2);
+
+      writeStream.on('close', () => {
+        console.log('344. Archivo subido exitosamente');
+        res.status(200).send('Archivo subido exitosamente');
+        conn.end();
+      });
+
+      writeStream.on('error', (uploadError) => {
+        console.error('350. Error al subir el archivo:', uploadError.message);
+        res.status(500).send('Error al subir el archivo');
+        conn.end();
+      });
+
+      readStream.pipe(writeStream);
+    });
+
+    conn.end();
+  });
+  
+  conn.on('error', (err) => {
+    console.error('362. Error de conexión SSH:', err);
+    // Puedes manejar el error de manera específica aquí
+  });
+
 });
 
 app.post('/getFile', async (req, res) => {
