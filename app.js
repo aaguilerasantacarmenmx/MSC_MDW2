@@ -151,7 +151,7 @@ app.post('/uploadFile2', async (req, res) => {
   
   const sftp = new SftpClient();
   const conn = new Client();
-
+  conn.connect(config);
   conn.on('ready', () => {
     console.log('Conexión SFTP establecida');
     // Aquí puedes realizar operaciones SFTP
@@ -205,7 +205,7 @@ app.post('/uploadFile2', async (req, res) => {
     // Puedes manejar el error de manera específica aquí
   });
   
-  conn.connect(config);
+
 
   //CONEXION SERVIDOR SFTP
   /*sftp.connect(config)
@@ -273,7 +273,6 @@ app.post('/uploadFile3', async (req, res) => {
   console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
   //console.log(`26. Contenido archivo: ${respuesta.data}\n`);
   
-  const SftpClient = require('ssh2-sftp-client');
   const { Client } = require('ssh2');
 
   const saltRounds = 10;
@@ -319,20 +318,22 @@ app.post('/uploadFile3', async (req, res) => {
   
   //const sftp = new SftpClient();
   const conn = new Client();
-  conn.connect(config)
-  
-  conn.on('ready', () => {
+
+  try
+  {
+    await conn.connect(config);
     console.log(`325. Conexión establecida con el servidor SFTP - host: ${host}\n`);
-      
+
     //RUTA DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
     const rutaLocal = `ArchivosTXT/${fileName}`;
-    console.log(`329. Conexión establecida con el servidor SFTP - rutaLocal: ${rutaLocal}\n`);
+    console.log(`329. rutaLocal: ${rutaLocal}\n`);
+
     //RUTA DEL SERVIDOR DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
     const remotePath2 = `${remotePath}${fileName}`;//`/home/ec2-user/test/${fileName}`;
     console.log(`332. Conexión establecida con el servidor SFTP - remotePath2: ${remotePath2}\n`);
-    //SE CREA ARconsole.log(`325. Conexión establecida con el servidor SFTP - host: ${host}\n`);CHIVO TXT EN CARPETA DE LA APLICACION PARA LUEGO PODER ENVIARLO A SERVIDOR SFPT
+
     require('fs').writeFileSync(rutaLocal, respuesta.data, 'utf-8');
-    console.log(`335.`);
+
     conn.sftp((err, sftp) => {
       console.log(`337.`);
       if (err)
@@ -359,14 +360,11 @@ app.post('/uploadFile3', async (req, res) => {
 
       readStream.pipe(writeStream);
     });
-
-    conn.end();
-  });
-  
-  conn.on('error', (err) => {
-    console.error('362. Error de conexión SSH:', err);
-    // Puedes manejar el error de manera específica aquí
-  });
+  }
+  catch (connectError) {
+    console.error('Error de conexión SSH:', connectError.message);
+    res.status(500).send('Error de conexión SSH');
+  }
 
 });
 
