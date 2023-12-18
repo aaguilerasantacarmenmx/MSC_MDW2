@@ -3,6 +3,7 @@ const multer = require('multer');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const SftpClient = require('ssh2-sftp-client');
+const { Client } = require('ssh2');
 const { error } = require('console');
 const bcrypt = require('bcrypt');
 const app = express();
@@ -272,13 +273,9 @@ app.post('/uploadFile3', async (req, res) => {
 
   console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
   //console.log(`26. Contenido archivo: ${respuesta.data}\n`);
-  
-  const { Client } = require('ssh2');
 
-  const saltRounds = 10;
-  //const hashedPassword = await bcrypt.hash(password, saltRounds);
-  //console.log(`111. hashedPassword: ${hashedPassword}\n`);
-  const config = {
+
+  const sftpConfig = {
     host: host,
     port: port,
     username: username,
@@ -315,53 +312,56 @@ app.post('/uploadFile3', async (req, res) => {
       ]
     }
   };
-  
-  //const sftp = new SftpClient();
+
   const conn = new Client();
 
-  try
-  {
-    await conn.connect(config);
-    console.log(`325. Conexión establecida con el servidor SFTP - host: ${host}\n`);
+  try {
+    await conn.connect(sftpConfig);
 
-    //RUTA DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
-    const rutaLocal = `ArchivosTXT/${fileName}`;
-    console.log(`329. rutaLocal: ${rutaLocal}\n`);
+    conn.on('ready', () => {
+      console.log(`Conexión SFTP establecida - conn: ${conn}`);
 
-    //RUTA DEL SERVIDOR DONDE SE ALMACENAN LOS ARCHIVOS TXT PROVENIENTES DE NETSUITE
-    const remotePath2 = `${remotePath}${fileName}`;//`/home/ec2-user/test/${fileName}`;
-    console.log(`332. Conexión establecida con el servidor SFTP - remotePath2: ${remotePath2}\n`);
+      // Realizar operaciones SFTP aquí, por ejemplo, subir un archivo
+      const localPath = `ArchivosTXT/${fileName}`;
+      const remotePath = `${remotePath}${fileName}`;
+      console.log(`325. localPath: ${localPath} - remotePath: ${remotePath}\n`);
+      conn.sftp((err, sftp) => {
+        if (err) {
+          console.error('Error al establecer la conexión SFTP:', err);
+          res.status(500).send('Error al establecer la conexión SFTP');
+          return;
+        }
 
-    require('fs').writeFileSync(rutaLocal, respuesta.data, 'utf-8');
+        const readStream = require('fs').createReadStream(localPath);
+        const writeStream = sftp.createWriteStream(remotePath);
 
-    conn.sftp((err, sftp) => {
-      console.log(`337.`);
-      if (err)
-      {
-        console.log(`340. err: ${JSON.stringify(err)}`);
-        throw err;
-      }
-      console.log(`339.`);
-      const readStream = require('fs').createReadStream(rutaLocal);
-      console.log(`341. readStream: ${readStream}`);
-      const writeStream = sftp.createWriteStream(remotePath2);
-      console.log(`343. writeStream: ${writeStream}`);
-      writeStream.on('close', () => {
-        console.log('344. Archivo subido exitosamente');
-        res.status(200).send('Archivo subido exitosamente');
-        conn.end();
+        writeStream.on('close', () => {
+          console.log('Archivo subido exitosamente');
+          res.status(200).send('Archivo subido exitosamente');
+
+          // Cerrar la conexión SFTP y SSH cuando hayas terminado
+          sftp.end();
+          conn.end();
+        });
+
+        writeStream.on('error', (uploadError) => {
+          console.error('Error al subir el archivo:', uploadError.message);
+          res.status(500).send('Error al subir el archivo');
+
+          // Cerrar la conexión SFTP y SSH en caso de error
+          sftp.end();
+          conn.end();
+        });
+
+        readStream.pipe(writeStream);
       });
-
-      writeStream.on('error', (uploadError) => {
-        console.error('350. Error al subir el archivo:', uploadError.message);
-        res.status(500).send('Error al subir el archivo');
-        conn.end();
-      });
-
-      readStream.pipe(writeStream);
     });
-  }
-  catch (connectError) {
+
+    conn.on('error', (err) => {
+      console.error('Error de conexión SSH:', err);
+      // Puedes manejar el error de manera específica aquí
+    });
+  } catch (connectError) {
     console.error('Error de conexión SSH:', connectError.message);
     res.status(500).send('Error de conexión SSH');
   }
