@@ -388,7 +388,7 @@ app.post('/getFile', async (req, res) => {
   }
 });
 
-app.post('/getFile2', async (req, res) => {
+app.post('/searchFile', async (req, res) => {
 
   const fileName = req[`body`][`fileName`];
   const host = req[`body`][`host`];
@@ -443,73 +443,125 @@ app.post('/getFile2', async (req, res) => {
   {
     await conn.connect(sftpConfig);
 
-    conn.on('ready', () => {
-      console.log(`322. Conexión SFTP establecida`);
+    conn.on(`ready`, () => {
+      
+      console.log(`448. Host: ${host} - Conexión SFTP ready`);
 
       conn.sftp((err, sftp) => {
-        if (err) {
-          console.error('Error al establecer la conexión SFTP:', err);
-          res.status(500).json({ mensaje: 'Error al establecer la conexión SFTP' });
-          conn.end();
+        if (err)
+        {
+          let message = `Host: ${host} - Error al establecer la conexión SFTP. Detalle: ${err}`;
+          console.error(message);
+          
+          res.status(500).json({
+            error: true,
+            message: message,
+            fileName: fileName,
+            fileContent: null
+          });
+
           return;
         }
   
-        // Obtener lista de archivos en el directorio remoto
+        //Obtener lista de archivos en el directorio remoto
         sftp.readdir(remotePath, (readdirErr, listaArchivos) => {
-          if (readdirErr) {
-            console.error('Error al leer el directorio remoto:', readdirErr);
-            res.status(500).json({ mensaje: 'Error al leer el directorio remoto' });
+          if (readdirErr)
+          {
+            let message = `Host: ${host} - Directorio: ${remotePath} - Error al leer el directorio remoto. Detalle: ${err}`;
+            console.error(message);
+
+            res.status(500).json({
+              error: true,
+              message: message,
+              fileName: fileName,
+              fileContent: null
+            });
+
             sftp.end();
             conn.end();
             return;
           }
   
           const nombresArchivos = listaArchivos.map((archivo) => archivo.filename);
+          console.log(`486. Host: ${host} - Directorio: ${remotePath} - Nombres de archivos encontrados: ${nombresArchivos}`);
 
-        console.log('Nombres de archivos en el directorio remoto:', nombresArchivos);
-        //res.status(200).json({ mensaje: 'Archivos listados correctamente', archivos: nombresArchivos });
-          // Buscar el archivo en la lista
+          //Busqueda de archivo especifico
           const archivoEncontrado = listaArchivos.find((archivo) => archivo.filename === fileName);
   
           if (archivoEncontrado)
           {
-            console.log('Archivo encontrado:', archivoEncontrado);
+            console.log(`493. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado: ${archivoEncontrado}`);
 
-            // Extraer contenido del archivo
+            //Extracción de contenido del archivo
             const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
-            readStream.pipe(concatStream((contenido) => {
-              console.log('Contenido del archivo extraído:', contenido.toString());
-              res.status(200).json({ mensaje: 'Contenido extraído correctamente', contenido: contenido.toString() });
 
-              // Cerrar la conexión SFTP y SSH cuando hayas terminado
+            readStream.pipe(concatStream((contenido) =>
+            {
+              console.log(`500. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
+              let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
+
+              res.status(200).json({
+                error: true,
+                message: message,
+                fileName: fileName,
+                fileContent: contenido.toString()
+              });
+
               sftp.end();
               conn.end();
+              return;
             }));
 
-            res.status(200).json({ mensaje: 'Archivo encontrado', archivo: archivoEncontrado });
           }
           else
           {
-            console.log('Archivo no encontrado');
-            res.status(404).json({ mensaje: 'Archivo no encontrado' });
-          }
-  
-          // Cerrar la conexión SFTP y SSH cuando hayas terminado
-          //sftp.end();
-          //conn.end();
-        });
-      });
-  });
+            let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo no encontrado`;
 
-    conn.on('error', (err) => {
-      console.error('Error general - details:', err);
-      // Puedes manejar el error de manera específica aquí
+              res.status(500).json({
+                error: true,
+                message: message,
+                fileName: fileName,
+                fileContent: null
+              });
+
+              sftp.end();
+              conn.end();
+              return;
+          }
+
+        });
+
+      });
+
+    });
+
+    conn.on(`error`, (err) => {
+      
+      let message = `Host: ${host} - Conexión SFTP error`;
+
+      console.log(message);
+
+      res.status(500).json({
+        error: true,
+        message: message,
+        fileName: fileName,
+        fileContent: null
+      });
+
+      return;
     });
   }
   catch(e)
   {
-    console.error('Error de conexión SSH:', connectError.message);
-    res.status(500).send('Error de conexión SSH');
+    let message = `Excepción genereal en servicio searchFile`;
+    res.status(500).json({
+      error: true,
+      message: message,
+      fileName: fileName,
+      fileContent: null
+    });
+
+    return;
   }
 
 });
