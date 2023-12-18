@@ -337,7 +337,7 @@ app.post('/uploadFile3', async (req, res) => {
       
       if (err) throw err;
 
-      const readStream = fs.createReadStream(rutaLocal);
+      const readStream = require('fs').createReadStream(rutaLocal);
       const writeStream = sftp.createWriteStream(remotePath2);
 
       writeStream.on('close', () => {
