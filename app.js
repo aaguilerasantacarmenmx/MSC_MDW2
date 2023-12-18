@@ -202,7 +202,7 @@ app.use(bodyParser.json());
   });
 });*/
 
-app.post('/uploadFile3', async (req, res) => {
+app.post('/uploadFile', async (req, res) => {
 
   const fileName = req[`body`][`fileName`];
   const fileUrl = req[`body`][`fileUrl`];
@@ -213,7 +213,7 @@ app.post('/uploadFile3', async (req, res) => {
   const remotePath2 = req[`body`][`remotePath`];
   const respuesta = await axios.get(fileUrl);
 
-  console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath2}\n`);
+  console.log(`216. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath2}\n`);
   //console.log(`26. Contenido archivo: ${respuesta.data}\n`);
 
   const sftpConfig = {
@@ -261,54 +261,98 @@ app.post('/uploadFile3', async (req, res) => {
     await conn.connect(sftpConfig);
 
     conn.on('ready', () => {
-      console.log(`322. Conexión SFTP establecida`);
+      console.log(`264. Host: ${host} - Conexión SFTP ready`);
 
-      // Realizar operaciones SFTP aquí, por ejemplo, subir un archivo
+      //Armado de rutas
       const localPath = `ArchivosTXT/${fileName}`;
       const remotePath = `${remotePath2}${fileName}`;
+
+      //Se genera archivo TXT en carpeta del proyecto
       require('fs').writeFileSync(localPath, respuesta.data, 'utf-8');
-      console.log(`328. localPath: ${localPath} - remotePath: ${remotePath}\n`);
+
+      console.log(`273. Host: ${host} - localPath: ${localPath} - remotePath: ${remotePath}\n`);
+      
       conn.sftp((err, sftp) => {
-        if (err) {
-          console.error('331. Error al establecer la conexión SFTP:', err);
-          res.status(500).send('332. Error al establecer la conexión SFTP');
+        if (err)
+        {
+          let message = `Host: ${host} - Error al establecer la conexión SFTP. Detalle: ${err}`;
+          console.error(message);
+          
+          res.status(500).json({
+            error: true,
+            message: message,
+            fileName: fileName,
+            fileContent: null
+          });
+
           return;
         }
 
         const readStream = require('fs').createReadStream(localPath);
+
+        //Se crea archivo en servidor sftp
         const writeStream = sftp.createWriteStream(remotePath);
-
-        writeStream.on('close', () => {
-          console.log('Archivo subido exitosamente');
-          res.status(200).send('Archivo subido exitosamente');
-
-          // Cerrar la conexión SFTP y SSH cuando hayas terminado
-          sftp.end();
-          conn.end();
-        });
-
-        writeStream.on('error', (uploadError) => {
-          console.error('Error al subir el archivo:', uploadError.message);
-          res.status(500).send('Error al subir el archivo');
-
-          // Cerrar la conexión SFTP y SSH en caso de error
-          sftp.end();
-          conn.end();
-        });
-
         readStream.pipe(writeStream);
+
+        writeStream.on(`close`, () => {
+          let message =  `Host: ${host} - Directorio : ${remotePath} - Nombre archivo: ${fileName} - Archivo cargado exitosamente`;
+          console.log(message);
+          
+          res.status(200).json({
+            error: false,
+            message: message,
+            fileName: fileName,
+            fileContent: null
+          });
+
+          sftp.end();
+          conn.end();
+          return;
+        });
+
+        writeStream.on(`error`, (uploadError) => {
+          let message =  `Host: ${host} - Directorio : ${remotePath} - Nombre archivo: ${fileName} - Archivo no pude ser cargado. Detalles: ${uploadError.message}`;
+          res.status(500).json({
+            error: true,
+            message: message,
+            fileName: fileName,
+            fileContent: null
+          });
+
+          sftp.end();
+          conn.end();
+          return;
+        });
       });
     });
 
-    conn.on('error', (err) => {
-      console.error('Error general - details:', err);
-      // Puedes manejar el error de manera específica aquí
+    conn.on(`error`, (err) => {
+      
+      let message = `Host: ${host} - Conexión SFTP error - servicio uploadFile`;
+
+      console.log(message);
+
+      res.status(500).json({
+        error: true,
+        message: message,
+        fileName: fileName,
+        fileContent: null
+      });
+
+      return;
     });
   }
   catch (connectError)
   {
-    console.error('Error de conexión SSH:', connectError.message);
-    res.status(500).send('Error de conexión SSH');
+    let message = `Excepción genereal en servicio uploadFile`;
+    res.status(500).json({
+      error: true,
+      message: message,
+      fileName: fileName,
+      fileContent: null
+    });
+
+    return;
   }
 
 });
@@ -397,7 +441,7 @@ app.post('/searchFile', async (req, res) => {
   const remotePath = req[`body`][`remotePath`];
   const password = req[`body`][`password`];
 
-  console.log(`25. fileName: ${fileName} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
+  console.log(`400. fileName: ${fileName} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
   
   const sftpConfig = {
     host: host,
@@ -501,7 +545,7 @@ app.post('/searchFile', async (req, res) => {
               let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
 
               res.status(200).json({
-                error: true,
+                error: false,
                 message: message,
                 fileName: fileName,
                 fileContent: contenido.toString()
@@ -537,7 +581,7 @@ app.post('/searchFile', async (req, res) => {
 
     conn.on(`error`, (err) => {
       
-      let message = `Host: ${host} - Conexión SFTP error`;
+      let message = `Host: ${host} - Conexión SFTP error - servicio searchFile`;
 
       console.log(message);
 
