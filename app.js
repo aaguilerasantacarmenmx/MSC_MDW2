@@ -476,7 +476,7 @@ app.post('/getFile2', async (req, res) => {
             console.log('Archivo encontrado:', archivoEncontrado);
 
             // Extraer contenido del archivo
-            const readStream = sftp.createReadStream(remotePath);
+            const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
             readStream.pipe(concatStream((contenido) => {
               console.log('Contenido del archivo extraído:', contenido.toString());
               res.status(200).json({ mensaje: 'Contenido extraído correctamente', contenido: contenido.toString() });
