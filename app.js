@@ -268,12 +268,11 @@ app.post('/uploadFile3', async (req, res) => {
   const port = req[`body`][`port`];
   const username = req[`body`][`username`];
   const password = req[`body`][`password`];
-  const remotePath = req[`body`][`remotePath`];
+  const remotePath2 = req[`body`][`remotePath`];
   const respuesta = await axios.get(fileUrl);
 
-  console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
+  console.log(`25. fileName: ${fileName} - fileUrl: ${fileUrl} - host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath2}\n`);
   //console.log(`26. Contenido archivo: ${respuesta.data}\n`);
-
 
   const sftpConfig = {
     host: host,
@@ -323,7 +322,7 @@ app.post('/uploadFile3', async (req, res) => {
 
       // Realizar operaciones SFTP aquí, por ejemplo, subir un archivo
       const localPath = `ArchivosTXT/${fileName}`;
-      const remotePath = `${remotePath}${fileName}`;
+      const remotePath = `${remotePath2}${fileName}`;
       require('fs').writeFileSync(localPath, respuesta.data, 'utf-8');
       console.log(`328. localPath: ${localPath} - remotePath: ${remotePath}\n`);
       conn.sftp((err, sftp) => {
@@ -359,7 +358,7 @@ app.post('/uploadFile3', async (req, res) => {
     });
 
     conn.on('error', (err) => {
-      console.error('Error de conexión SSH:', err);
+      console.error('Error general - details:', err);
       // Puedes manejar el error de manera específica aquí
     });
   } catch (connectError) {
