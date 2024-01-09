@@ -258,7 +258,7 @@ app.post('/searchFile', async (req, res) => {
             conn.end();
             return;
           }
-  
+          
           const nombresArchivos = listaArchivos.map((archivo) => archivo.filename);
           console.log(`263. Host: ${host} - Directorio: ${remotePath} - Nombres de archivos encontrados: ${nombresArchivos}`);
 
@@ -305,6 +305,161 @@ app.post('/searchFile', async (req, res) => {
               conn.end();
               return;
           }
+
+        });
+
+      });
+
+    });
+
+    conn.on(`error`, (err) => {
+      
+      let message = `Host: ${host} - Conexión SFTP error - servicio searchFile`;
+
+      console.log(message);
+
+      res.status(500).json({
+        error: true,
+        message: message,
+        fileName: fileName,
+        fileContent: null
+      });
+
+      return;
+    });
+  }
+  catch(e)
+  {
+    let message = `Excepción genereal en servicio searchFile`;
+    res.status(500).json({
+      error: true,
+      message: message,
+      fileName: fileName,
+      fileContent: null
+    });
+
+    return;
+  }
+
+});
+
+//SERVICIO DE BUSQUEDA DE ARCHIVOS EN SERVIDOR SFPT
+app.post('/searchFiles', async (req, res) => {
+
+  const host = req[`body`][`host`];
+  const port = req[`body`][`port`];
+  const username = req[`body`][`username`];
+  const remotePath = req[`body`][`remotePath`];
+  const password = req[`body`][`password`];
+
+  console.log(`177. host: ${host} - port: ${port} - username: ${username} - password: ${password} - remotePath: ${remotePath}\n`);
+  
+  const sftpConfig = {
+    host: host,
+    port: port,
+    username: username,
+    password: password,
+    algorithms: {
+      kex: [
+        "diffie-hellman-group1-sha1",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group14-sha1"
+      ],
+      cipher: [
+        "3des-cbc",
+        "aes128-ctr",
+        "aes192-ctr",
+        "aes256-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com"
+      ],
+      serverHostKey: [
+        "ssh-rsa",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521"
+      ],
+      hmac: [
+        "hmac-sha2-256",
+        "hmac-sha2-512",
+        "hmac-sha1"
+      ]
+    }
+  };
+
+  const conn = new Client();
+
+  try
+  {
+    await conn.connect(sftpConfig);
+
+    conn.on(`ready`, () => {
+      
+      console.log(`225. Host: ${host} - Conexión SFTP ready`);
+
+      conn.sftp((err, sftp) => {
+        if (err)
+        {
+          let message = `Host: ${host} - Error al establecer la conexión SFTP. Detalle: ${err}`;
+          console.error(message);
+          
+          res.status(500).json({
+            error: true,
+            message: message,
+            fileContent: null
+          });
+
+          return;
+        }
+  
+        //Obtener lista de archivos en el directorio remoto
+        sftp.readdir(remotePath, (readdirErr, listaArchivos) => {
+          if (readdirErr)
+          {
+            let message = `Host: ${host} - Directorio: ${remotePath} - Error al leer el directorio remoto. Detalle: ${err}`;
+            console.error(message);
+
+            res.status(500).json({
+              error: true,
+              message: message,
+              fileContent: null
+            });
+
+            sftp.end();
+            conn.end();
+            return;
+          }
+          
+          
+          let fileName_array = [];
+          let contenido_array = [];
+
+          for(let i =0; i < listaArchivos.length; i++){
+            console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${listaArchivos[i]}`);
+            const fileName = listaArchivos[i].filename
+            const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
+            readStream.pipe(concatStream((contenido) =>
+            {
+              console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
+              fileName_array.push(fileName);
+              contenido_array.push(contenido.toString());
+            }));
+          }
+          res.status(200).json({
+            error: false,
+            message: message,
+            fileName_array: fileName_array,
+            contenido_array: contenido_array
+          });
+
+          sftp.end();
+          conn.end();
+          return;
 
         });
 
