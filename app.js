@@ -416,7 +416,8 @@ app.post('/searchFiles', async (req, res) => {
 
           return;
         }
-  
+        console.log(`419. Host: ${host} - Conexión SFTP ready`);
+
         //Obtener lista de archivos en el directorio remoto
         sftp.readdir(remotePath, (readdirErr, listaArchivos) => {
           if (readdirErr)
@@ -433,8 +434,8 @@ app.post('/searchFiles', async (req, res) => {
             conn.end();
             return;
           }
-          
-          
+          console.log(`437. Host: ${host} - Conexión SFTP ready`);
+
           let fileName_array = [];
           let contenido_array = [];
 
@@ -449,6 +450,8 @@ app.post('/searchFiles', async (req, res) => {
               contenido_array.push(contenido.toString());
             }));
           }
+          console.log(`453. Host: ${host} - Conexión SFTP ready`);
+
           res.status(200).json({
             error: false,
             message: message,
@@ -489,8 +492,8 @@ app.post('/searchFiles', async (req, res) => {
     res.status(500).json({
       error: true,
       message: message,
-      fileName: fileName,
-      fileContent: null
+      fileName_array: null,
+      contenido_array: null
     });
 
     return;
