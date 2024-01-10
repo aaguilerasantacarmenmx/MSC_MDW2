@@ -440,8 +440,8 @@ app.post('/searchFiles', async (req, res) => {
           let contenido_array = [];
 
           for(let i =0; i < listaArchivos.length; i++){
-            console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${listaArchivos[i]}`);
-            const fileName = listaArchivos[i].filename
+            console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${JSON.stringify(listaArchivos[i])}`);
+            const fileName = listaArchivos[i].filename;
             const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
             readStream.pipe(concatStream((contenido) =>
             {
