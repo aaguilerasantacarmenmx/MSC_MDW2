@@ -451,6 +451,7 @@ app.post('/searchFiles', async (req, res) => {
             }));
           }
           console.log(`453. listaArchivos: ${JSON.stringify(listaArchivos)}`);
+          let message = `Host: ${host} - Conexión SFTP exito - servicio searchFiles`;
 
           res.status(200).json({
             error: false,
