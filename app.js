@@ -426,8 +426,7 @@ app.post('/searchFiles', async (req, res) => {
 
             res.status(500).json({
               error: true,
-              message: message,
-              fileContent: null
+              message: message
             });
 
             sftp.end();
@@ -469,15 +468,16 @@ app.post('/searchFiles', async (req, res) => {
 
     conn.on(`error`, (err) => {
       
-      let message = `Host: ${host} - Conexión SFTP error - servicio searchFile`;
+      let message = `Host: ${host} - Conexión SFTP error - servicio searchFiles`;
 
       console.log(message);
 
       res.status(500).json({
         error: true,
         message: message,
-        fileName: fileName,
-        fileContent: null
+        fileName_array: null,
+        contenido_array: null,
+        errorm: JSON.stringify(err)
       });
 
       return;
