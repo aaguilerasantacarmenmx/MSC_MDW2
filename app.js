@@ -450,7 +450,7 @@ app.post('/searchFiles', async (req, res) => {
               contenido_array.push(contenido.toString());
             }));
           }
-          console.log(`453. Host: ${host} - Conexión SFTP ready`);
+          console.log(`453. listaArchivos: ${JSON.stringify(listaArchivos)}`);
 
           res.status(200).json({
             error: false,
@@ -458,6 +458,7 @@ app.post('/searchFiles', async (req, res) => {
             fileName_array: fileName_array,
             contenido_array: contenido_array
           });
+          console.log(`461. Host: ${host} - Conexión SFTP ready`);
 
           sftp.end();
           conn.end();
