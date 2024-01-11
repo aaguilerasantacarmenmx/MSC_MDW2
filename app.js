@@ -490,7 +490,7 @@ app.post('/searchFiles', async (req, res) => {
   }
   catch(e)
   {
-    let message = `Excepción genereal en servicio searchFile`;
+    let message = `Excepción general en servicio searchFile`;
     res.status(500).json({
       error: true,
       message: message,
