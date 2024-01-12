@@ -443,6 +443,7 @@ app.post('/searchFiles', async (req, res) => {
             console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${JSON.stringify(listaArchivos[i])}`);
             const fileName = listaArchivos[i].filename;
             const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
+            console.log(`264. Host: ${host} - Directorio: ${remotePath}/${fileName} - readStream: ${JSON.stringify(readStream)}`);
             readStream.pipe(concatStream((contenido) =>
             {
               console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
