@@ -446,6 +446,8 @@ app.post('/searchFiles', async (req, res) => {
             const readStream2 = sftp.createReadStream(`${remotePath}${fileName}`);
             console.log(`264. Host: ${host} - Directorio: Import${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream.path)}`);
             console.log(`264. Host: ${host} - Directorio: ${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream2.path)}`);
+            readStream.on('data', function(chunk){console.log(chunk.toString())});
+            readStream2.on('data', function(chunk){console.log(chunk.toString())});
             readStream.pipe(concatStream((contenido) =>
             {
               console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
