@@ -448,6 +448,8 @@ app.post('/searchFiles', async (req, res) => {
             console.log(`264. Host: ${host} - Directorio: ${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream2.path)} - readStream.byteRead: ${JSON.stringify(readStream2.byteRead)} - readStream.pending: ${JSON.stringify(readStream2.pending)}`);
             readStream.on('data', function(chunk){console.log(chunk.toString())});
             readStream2.on('data', function(chunk){console.log(chunk.toString())});
+            readStream.on('error', function(chunk){console.log("error")});
+            readStream2.on('error', function(chunk){console.log("error")});
             readStream.on('end', function(chunk){console.log("end")});
             readStream2.on('end', function(chunk){console.log("end")});
             readStream.pipe(concatStream((contenido) =>
