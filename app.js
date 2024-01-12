@@ -442,14 +442,19 @@ app.post('/searchFiles', async (req, res) => {
           for(let i =0; i < listaArchivos.length; i++){
             console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${JSON.stringify(listaArchivos[i])}`);
             const fileName = listaArchivos[i].filename;
-            const readStream = sftp.createReadStream(`Import/${remotePath}${fileName}`);
+            const readStream = sftp.createReadStream(`Import${remotePath}${fileName}`);
             const readStream2 = sftp.createReadStream(`${remotePath}${fileName}`);
-            console.log(`264. Host: ${host} - Directorio: ${remotePath}${fileName}`);
+            console.log(`264. Host: ${host} - Directorio: Import${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream.path)}`);
             console.log(`264. Host: ${host} - Directorio: ${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream2.path)}`);
-            console.log(`264. Host: ${host} - Directorio: Import/${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream.path)}`);
             readStream.pipe(concatStream((contenido) =>
             {
               console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
+              fileName_array.push(fileName);
+              contenido_array.push(contenido.toString());
+            }));
+            readStream2.pipe(concatStream((contenido) =>
+            {
+              console.log(`278. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
               fileName_array.push(fileName);
               contenido_array.push(contenido.toString());
             }));
