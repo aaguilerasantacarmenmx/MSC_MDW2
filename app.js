@@ -416,7 +416,6 @@ app.post('/searchFiles', async (req, res) => {
 
           return;
         }
-        console.log(`419. Host: ${host} - Conexión SFTP ready`);
 
         //Obtener lista de archivos en el directorio remoto
         sftp.readdir(remotePath, (readdirErr, listaArchivos) => {
@@ -434,34 +433,21 @@ app.post('/searchFiles', async (req, res) => {
             conn.end();
             return;
           }
-          console.log(`437. Host: ${host} - Conexión SFTP ready`);
-
           let fileName_array = [];
-          let contenido_array = [];
 
           for(let i =0; i < listaArchivos.length; i++){
             console.log(`263. Host: ${host} - Directorio: ${remotePath} - Archivos: ${JSON.stringify(listaArchivos[i])}`);
             const fileName = listaArchivos[i].filename;
-            const readStream = sftp.createReadStream(`${remotePath}${fileName}`);
-            console.log(`264. Host: ${host} - Directorio: ${remotePath}${fileName} - readStream.path: ${JSON.stringify(readStream.path)} - readStream.byteRead: ${JSON.stringify(readStream.byteRead)} - readStream.pending: ${JSON.stringify(readStream.pending)}`);
-            readStream.pipe(concatStream((contenido) =>
-            {
-              console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
-              fileName_array.push(fileName);
-              contenido_array.push(contenido.toString());
-            }));
+            fileName_array.push(fileName);
           }
-          console.log(`453. listaArchivos: ${JSON.stringify(listaArchivos)}`);
+          console.log(`453. listaArchivos: ${JSON.stringify(fileName_array)}`);
           let message = `Host: ${host} - Conexión SFTP exito - servicio searchFiles`;
 
           res.status(200).json({
             error: false,
             message: message,
             fileName_array: fileName_array,
-            contenido_array: contenido_array
           });
-          console.log(`461. Host: ${host} - Conexión SFTP ready`);
-
           sftp.end();
           conn.end();
           return;
