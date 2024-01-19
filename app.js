@@ -607,7 +607,7 @@ app.post('/deleteFile', async (req, res) => {
 
             sftp.delete(`${remotePath}${fileName}`);
 
-            console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
+            console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName}`);
             let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
 
             res.status(200).json({
