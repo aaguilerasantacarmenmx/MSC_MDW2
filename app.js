@@ -276,24 +276,29 @@ app.post('/searchFile', async (req, res) => {
               console.error(`Error al leer el archivo ${fileName}: ${error.message}`);
               // Manejo del error
            });
-           
-            readStream.pipe(concatStream((contenido) =>
-            {
-              console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
-              let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
 
-              res.status(200).json({
-                error: false,
-                message: message,
-                fileName: fileName,
-                fileContent: contenido.toString()
-              });
+           readStream.on('open', () => {
+            console.log(`Comenzando a leer el archivo ${fileName}.`);
+            // Acciones al abrir el archivo para lectura
+              readStream.pipe(concatStream((contenido) =>
+              {
+                console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
+                let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
 
-              sftp.end();
-              conn.end();            
-              readStream.close();
-              return;
-            }));
+                res.status(200).json({
+                  error: false,
+                  message: message,
+                  fileName: fileName,
+                  fileContent: contenido.toString()
+                });
+
+                sftp.end();
+                conn.end();            
+                readStream.close();
+                return;
+              }));
+            });
+            
           }
           else
           {
