@@ -298,7 +298,7 @@ app.post('/searchFile', async (req, res) => {
                 return;
               }));
             });
-            
+
           }
           else
           {
@@ -645,7 +645,7 @@ app.post('/deleteFile', async (req, res) => {
 
     conn.on(`error`, (err) => {
       
-      let message = `Host: ${host} - Conexión SFTP error - servicio deleteFile`;
+      let message = `Host: ${host} - Conexión SFTP error - servicio deleteFile - Detalle: ${JSON.stringify(err)}`;
 
       console.log(message);
 
@@ -661,7 +661,7 @@ app.post('/deleteFile', async (req, res) => {
   }
   catch(e)
   {
-    let message = `Excepción genereal en servicio deleteFile`;
+    let message = `Excepción general en servicio deleteFile`;
     res.status(500).json({
       error: true,
       message: message,
