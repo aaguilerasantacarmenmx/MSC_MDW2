@@ -267,7 +267,7 @@ app.post('/searchFile', async (req, res) => {
   
           if (archivoEncontrado)
           {
-            console.log(`270. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado: ${archivoEncontrado}`);
+            console.log(`270. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`);
 
             //Extracción de contenido del archivo
             const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
@@ -286,9 +286,9 @@ app.post('/searchFile', async (req, res) => {
 
               sftp.end();
               conn.end();
-              return;
             }));
-
+            readStream.close();
+            return;
           }
           else
           {
