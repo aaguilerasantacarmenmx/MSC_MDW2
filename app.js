@@ -645,7 +645,7 @@ app.post('/deleteFile', async (req, res) => {
 
     conn.on(`error`, (err) => {
       
-      let message = `Host: ${host} - Conexión SFTP error - servicio deleteFile - Detalle: ${JSON.stringify(err)}`;
+      let message = `Host: ${host} - Conexión SFTP error - servicio deleteFile - Detalle: ${JSON.stringify(err.message)}`;
 
       console.log(message);
 
