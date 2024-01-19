@@ -558,7 +558,7 @@ app.post('/deleteFile', async (req, res) => {
 
     conn.on(`ready`, () => {
       
-      console.log(`225. Host: ${host} - Conexión SFTP ready`);
+      console.log(`561. Host: ${host} - Conexión SFTP ready`);
 
       conn.sftp((err, sftp) => {
         if (err)
@@ -596,45 +596,66 @@ app.post('/deleteFile', async (req, res) => {
           }
           
           const nombresArchivos = listaArchivos.map((archivo) => archivo.filename);
-          console.log(`263. Host: ${host} - Directorio: ${remotePath} - Nombres de archivos encontrados: ${nombresArchivos}`);
+          console.log(`599. Host: ${host} - Directorio: ${remotePath} - Nombres de archivos encontrados: ${nombresArchivos}`);
 
           //Busqueda de archivo especifico
           const archivoEncontrado = listaArchivos.find((archivo) => archivo.filename === fileName);
   
           if (archivoEncontrado)
           {
-            console.log(`270. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado: ${archivoEncontrado}`);
+            console.log(`606. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado: ${archivoEncontrado}`);
 
-            sftp.delete(`${remotePath}${fileName}`);
+            sftp.unlink(`${remotePath}${fileName}`, (unlinkErr) => {
+              if (unlinkErr) {
 
-            console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName}`);
-            let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo encontrado`;
+                let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Error al intentar eliminar archivo - Detalle: ${unlinkErr}`;
+                console.log(`612. ${message}`);
 
-            res.status(200).json({
-              error: false,
+                res.status(500).json({
+                  error: false,
+                  message: message,
+                  fileName: fileName,
+                  eliminado: false
+                });
+    
+                sftp.end();
+                conn.end();
+                return;
+
+              }
+              else
+              {
+                
+                let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} eliminado correctamente`;
+                console.log(`630. ${message}`);
+    
+                res.status(200).json({
+                  error: false,
+                  message: message,
+                  fileName: fileName,
+                  eliminado: true
+                });
+    
+                sftp.end();
+                conn.end();
+                return;
+              }
+           });
+          }
+          else
+          {
+            let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo no encontrado`;
+            console.log(`648. ${message}`);
+            res.status(500).json({
+              error: true,
               message: message,
               fileName: fileName,
-              eliminado: true
+              fileContent: null
             });
 
             sftp.end();
             conn.end();
             return;
-          }
-          else
-          {
-            let message = `Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Archivo no encontrado`;
-
-              res.status(500).json({
-                error: true,
-                message: message,
-                fileName: fileName,
-                fileContent: null
-              });
-
-              sftp.end();
-              conn.end();
-              return;
           }
 
         });
@@ -647,7 +668,7 @@ app.post('/deleteFile', async (req, res) => {
       
       let message = `Host: ${host} - Conexión SFTP error - servicio deleteFile - Detalle: ${JSON.stringify(err.message)}`;
 
-      console.log(message);
+      console.log(`671. ${message}`);
 
       res.status(500).json({
         error: true,
