@@ -285,10 +285,10 @@ app.post('/searchFile', async (req, res) => {
               });
 
               sftp.end();
-              conn.end();
+              conn.end();            
+              readStream.close();
+              return;
             }));
-            readStream.close();
-            return;
           }
           else
           {
