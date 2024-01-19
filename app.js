@@ -272,6 +272,11 @@ app.post('/searchFile', async (req, res) => {
             //Extracción de contenido del archivo
             const readStream = sftp.createReadStream(`${remotePath}/${fileName}`);
 
+            readStream.on('error', (error) => {
+              console.error(`Error al leer el archivo ${fileName}: ${error.message}`);
+              // Manejo del error
+           });
+           
             readStream.pipe(concatStream((contenido) =>
             {
               console.log(`277. Host: ${host} - Directorio: ${remotePath} - Nombre archivo: ${fileName} - Contenido: ${contenido.toString()}`);
