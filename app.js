@@ -721,7 +721,7 @@ app.get("/", auth, (req, res) => {
 }); 
 
 //SERVICIO DESTINADO A PROBAR LA DISPONIBLIDAD DE LA APLICACION
-app.get("/auth", (req, res) => {
+app.get("/getJWT", (req, res) => {
   const token = req.header('x-auth-token');
   console.log(`12. token: ${token}\n`);
   if(!token)
