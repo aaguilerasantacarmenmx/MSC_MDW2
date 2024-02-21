@@ -183,7 +183,7 @@ app.post('/uploadFile', async (req, res) => {
 });
 
 //SERVICIO DE BUSQUEDA DE ARCHIVOS EN SERVIDOR SFPT
-app.post('/searchFile', async (req, res) => {
+app.post('/searchFile', auth, async (req, res) => {
 
   const fileName = req[`body`][`fileName`];
   const host = req[`body`][`host`];
@@ -372,7 +372,7 @@ app.post('/searchFile', async (req, res) => {
 });
 
 //SERVICIO DE BUSQUEDA DE ARCHIVOS EN SERVIDOR SFPT
-app.post('/searchFiles', async (req, res) => {
+app.post('/searchFiles', auth, async (req, res) => {
 
   const host = req[`body`][`host`];
   const port = req[`body`][`port`];
