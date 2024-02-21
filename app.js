@@ -28,7 +28,7 @@ const port = 4000;
 app.use(bodyParser.json());
 
 //SERVICIO DE CARGA DE ARCHIVO EN SERVIDOR SFTP
-app.post('/uploadFile', async (req, res) => {
+app.post('/uploadFile', auth, async (req, res) => {
 
   const fileName = req[`body`][`fileName`];
   const fileUrl = req[`body`][`fileUrl`];
@@ -519,7 +519,7 @@ app.post('/searchFiles', auth, async (req, res) => {
 });
 
 //SERVICIO DE BUSQUEDA DE ARCHIVOS EN SERVIDOR SFPT
-app.post('/deleteFile', async (req, res) => {
+app.post('/deleteFile', auth, async (req, res) => {
 
   const fileName = req[`body`][`fileName`];
   const host = req[`body`][`host`];
